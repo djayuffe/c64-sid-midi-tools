@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "c64-sid-midi-tools"
+version = "0.1.0"
+description = "Dependency-free Commodore 64 SID inspection and Standard MIDI File validation tools."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Proprietary"}
+authors = [{name = "Ulf Bertilsson"}]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: Other/Proprietary License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+]
+
+[project.scripts]
+c64-sid-midi = "c64_sid_midi_tools.cli:main"
+
+[project.urls]
+Repository = "https://github.com/djayuffe/c64-sid-midi-tools"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
