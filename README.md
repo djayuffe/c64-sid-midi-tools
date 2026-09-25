@@ -23,6 +23,8 @@ For development without installation:
 PYTHONPATH=src python3 -m c64_sid_midi_tools.cli --help
 ```
 
+Check the installed version with `c64-sid-midi --version`.
+
 ## Command-line usage
 
 Every successful command writes structured JSON to standard output. Invalid files or arguments return exit status `2` and a concise error message.
@@ -45,7 +47,7 @@ Validation checks the SMF header, format/track-count rules, timing division, tra
 
 ### Create a MIDI file from JSON notes
 
-Create `notes.json` with absolute tick positions:
+Use the bundled example or create a `notes.json` file with absolute tick positions:
 
 ```json
 [
@@ -58,7 +60,7 @@ Create `notes.json` with absolute tick positions:
 Then create a portable format-0 MIDI file:
 
 ```sh
-c64-sid-midi make-midi notes.json melody.mid --tempo 120 --ticks-per-beat 480
+c64-sid-midi make-midi examples/melody.json melody.mid --tempo 120 --ticks-per-beat 480
 c64-sid-midi validate-midi melody.mid
 ```
 
@@ -114,3 +116,9 @@ python3 -m pip wheel --no-build-isolation --no-deps .
 ```
 
 The project was extracted from an unversioned experimental folder. [SOURCE_AUDIT.md](docs/SOURCE_AUDIT.md) records the source findings and the deliberate exclusions.
+
+## Project notes
+
+- [CHANGELOG.md](CHANGELOG.md) records user-visible changes.
+- [CONTRIBUTING.md](CONTRIBUTING.md) explains the portability and verification rules.
+- [examples/melody.json](examples/melody.json) is a ready-to-run MIDI authoring input.

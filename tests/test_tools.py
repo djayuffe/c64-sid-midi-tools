@@ -29,6 +29,11 @@ def minimal_midi() -> bytes:
 
 
 class ToolTests(unittest.TestCase):
+    def test_cli_reports_version(self) -> None:
+        with self.assertRaises(SystemExit) as result:
+            main(["--version"])
+        self.assertEqual(result.exception.code, 0)
+
     def test_parses_sid_metadata_and_payload(self) -> None:
         header, payload = parse_sid(minimal_sid())
         self.assertEqual(header.magic, "PSID")

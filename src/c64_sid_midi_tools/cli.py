@@ -6,12 +6,14 @@ import argparse
 import json
 from pathlib import Path
 
+from . import __version__
 from .midi import MidiNote, inspect_midi_file, write_midi_file
 from .sid import inspect_sid_file
 
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="c64-sid-midi", description="Inspect C64 SID files and validate MIDI files.")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     subparsers = parser.add_subparsers(dest="command", required=True)
     for command, help_text in (("inspect", "inspect PSID/RSID metadata"), ("validate-midi", "validate a Standard MIDI File")):
         child = subparsers.add_parser(command, help=help_text)
