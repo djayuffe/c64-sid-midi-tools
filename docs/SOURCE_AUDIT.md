@@ -20,4 +20,13 @@ The supplied `Ai_coded` folder contains 103 Python files and 21 shell scripts, w
 - strict Standard MIDI File structure validation;
 - a documented CLI and automated regression tests.
 
+## Follow-up hardening
+
+The maintained project received a second audit after extraction. It added:
+
+- PSID/RSID version rules and v2+ extension-field parsing;
+- SMF format-0 track-count, end-of-track, and malformed-meta-event validation;
+- a dependency-free, validated format-0 MIDI writer; and
+- command and API examples for every maintained capability.
+
 The original folder is unchanged. No source file was copied verbatim into this project. The omitted experimental scripts are intentionally not represented as supported features.

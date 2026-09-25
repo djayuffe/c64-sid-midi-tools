@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 
 _MIN_HEADER_SIZE = 0x76
+_EXTENDED_HEADER_SIZE = 0x7C
 _KNOWN_MAGICS = {b"PSID", b"RSID"}
 
 
@@ -36,6 +37,11 @@ class SidHeader:
     title: str
     author: str
     released: str
+    flags: int | None
+    relocation_start_page: int | None
+    relocation_pages: int | None
+    second_sid_address: int | None
+    third_sid_address: int | None
     payload_size: int
 
     def to_dict(self) -> dict[str, int | str]:
@@ -54,8 +60,16 @@ def parse_sid(data: bytes) -> tuple[SidHeader, bytes]:
     if data[:4] not in _KNOWN_MAGICS:
         raise ValueError("not a PSID or RSID file")
 
+    magic = data[:4]
+    version = _u16be(data, 4)
+    if version not in (1, 2, 3, 4):
+        raise ValueError(f"unsupported SID version {version}")
+    if magic == b"RSID" and version == 1:
+        raise ValueError("RSID version 1 is not defined")
+
     data_offset = _u16be(data, 6)
-    if not _MIN_HEADER_SIZE <= data_offset <= len(data):
+    minimum_offset = _EXTENDED_HEADER_SIZE if version >= 2 else _MIN_HEADER_SIZE
+    if not minimum_offset <= data_offset <= len(data):
         raise ValueError("SID data offset is outside the file")
 
     payload = data[data_offset:]
@@ -73,9 +87,15 @@ def parse_sid(data: bytes) -> tuple[SidHeader, bytes]:
     if not 1 <= start_song <= songs:
         raise ValueError("SID start-song number is outside the declared song range")
 
+    flags = _u16be(data, 0x76) if version >= 2 else None
+    second_sid = 0xD000 + (data[0x7A] << 4) if version >= 3 and data[0x7A] else None
+    third_sid = 0xD000 + (data[0x7B] << 4) if version >= 4 and data[0x7B] else None
+    if second_sid == third_sid and second_sid is not None:
+        raise ValueError("second and third SID addresses must differ")
+
     header = SidHeader(
-        magic=data[:4].decode("ascii"),
-        version=_u16be(data, 4),
+        magic=magic.decode("ascii"),
+        version=version,
         data_offset=data_offset,
         load_address=load_address,
         init_address=_u16be(data, 10),
@@ -86,6 +106,11 @@ def parse_sid(data: bytes) -> tuple[SidHeader, bytes]:
         title=_text(data[22:54]),
         author=_text(data[54:86]),
         released=_text(data[86:118]),
+        flags=flags,
+        relocation_start_page=data[0x78] if version >= 2 else None,
+        relocation_pages=data[0x79] if version >= 2 else None,
+        second_sid_address=second_sid,
+        third_sid_address=third_sid,
         payload_size=len(payload),
     )
     return header, payload
