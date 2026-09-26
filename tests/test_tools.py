@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
+import io
 import tempfile
 import unittest
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
 from c64_sid_midi_tools.cli import main
@@ -67,6 +69,13 @@ class ToolTests(unittest.TestCase):
         header, _ = parse_sid(bytes(raw))
         self.assertEqual((header.second_sid_address, header.third_sid_address), (0xD420, 0xD440))
 
+    def test_rejects_invalid_extra_sid_addresses(self) -> None:
+        raw = bytearray(minimal_sid())
+        raw[4:6] = (4).to_bytes(2, "big")
+        raw[0x7A] = 0x40  # $D400 is the primary SID window, never an extra SID.
+        with self.assertRaisesRegex(ValueError, "outside the valid PSID ranges"):
+            parse_sid(bytes(raw))
+
     def test_validates_minimal_midi(self) -> None:
         info = validate_midi(minimal_midi())
         self.assertEqual((info.format, info.tracks, info.ticks_per_beat, info.event_count), (0, 1, 480, 1))
@@ -92,6 +101,10 @@ class ToolTests(unittest.TestCase):
         self.assertEqual((info.format, info.tracks, info.event_count), (0, 1, 6))
         with self.assertRaisesRegex(ValueError, "duration"):
             MidiNote(start=0, duration=0, pitch=60)
+        with self.assertRaisesRegex(ValueError, "integer"):
+            MidiNote(start=0.5, duration=1, pitch=60)  # type: ignore[arg-type]
+        with self.assertRaisesRegex(ValueError, "overlapping"):
+            make_midi([MidiNote(start=0, duration=20, pitch=60), MidiNote(start=10, duration=20, pitch=60)])
 
     def test_cli_inspects_sid_and_validates_midi(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -107,6 +120,14 @@ class ToolTests(unittest.TestCase):
             self.assertEqual(main(["make-midi", str(notes_file), str(output_file), "--tempo", "100"]), 0)
             self.assertEqual(validate_midi(output_file.read_bytes()).event_count, 4)
             self.assertEqual(json.loads(json.dumps(parse_sid(sid_file.read_bytes())[0].to_dict()))["title"], "Unit Test")
+
+    def test_cli_errors_use_stderr_and_keep_stdout_clean(self) -> None:
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            result = main(["inspect", "missing.sid"])
+        self.assertEqual(result, 2)
+        self.assertEqual(stdout.getvalue(), "")
+        self.assertIn("error:", stderr.getvalue())
 
 
 if __name__ == "__main__":

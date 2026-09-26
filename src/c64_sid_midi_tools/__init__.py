@@ -1,4 +1,7 @@
-"""Portable inspection and validation helpers for SID and MIDI files."""
+"""Portable inspection and validation helpers for SID and MIDI files.
+
+Copyright (C) 2026 Ulf Bertilsson. SPDX-License-Identifier: GPL-3.0-or-later.
+"""
 
 from .midi import MidiFileInfo, MidiNote, make_midi, validate_midi, write_midi_file
 from .sid import SidHeader, parse_sid

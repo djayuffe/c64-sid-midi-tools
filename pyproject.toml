@@ -8,14 +8,14 @@ version = "0.2.0"
 description = "Dependency-free Commodore 64 SID inspection and Standard MIDI File validation tools."
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "Proprietary"}
+license = {text = "GPL-3.0-or-later"}
 authors = [{name = "Ulf Bertilsson"}]
 keywords = ["c64", "commodore-64", "midi", "music-tools", "psid", "rsid", "sid"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Environment :: Console",
   "Intended Audience :: Developers",
-  "License :: Other/Proprietary License",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
 ]

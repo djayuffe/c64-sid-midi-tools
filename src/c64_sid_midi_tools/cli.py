@@ -1,9 +1,13 @@
-"""Command-line interface for the portable inspection tools."""
+"""Command-line interface for the portable inspection tools.
+
+Copyright (C) 2026 Ulf Bertilsson. SPDX-License-Identifier: GPL-3.0-or-later.
+"""
 
 from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 from . import __version__
@@ -60,7 +64,7 @@ def main(argv: list[str] | None = None) -> int:
             write_midi_file(str(args.output), notes, ticks_per_beat=args.ticks_per_beat, tempo_bpm=args.tempo)
             result = {"notes": len(notes), "output": str(args.output), "tempo_bpm": args.tempo, "ticks_per_beat": args.ticks_per_beat}
     except (OSError, ValueError, json.JSONDecodeError) as exc:
-        print(f"error: {exc}")
+        print(f"error: {exc}", file=sys.stderr)
         return 2
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0

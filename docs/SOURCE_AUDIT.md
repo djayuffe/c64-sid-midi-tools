@@ -30,3 +30,21 @@ The maintained project received a second audit after extraction. It added:
 - command and API examples for every maintained capability.
 
 The original folder is unchanged. No source file was copied verbatim into this project. The omitted experimental scripts are intentionally not represented as supported features.
+
+## Maintained-code audit — 2026-09-26
+
+The public-release audit reviewed the maintained parser, MIDI writer/validator,
+CLI, package metadata and documentation. It corrected four issues before
+publication:
+
+- v3/v4 extra-SID address bytes now have to decode to PSID-defined extra-SID
+  windows, rather than any `$Dxxx` I/O location;
+- note fields are explicitly integer-only and same-channel/same-pitch overlaps
+  are rejected as ambiguous MIDI authoring input;
+- CLI errors now use standard error, leaving standard output machine-readable
+  JSON on successful commands; and
+- package metadata, source headers and repository files now declare
+  GPL-3.0-or-later with copyright © 2026 Ulf Bertilsson.
+
+The audit did not broaden scope to SID emulation or transcription. The
+documented boundary remains intentional and is reflected in the README.

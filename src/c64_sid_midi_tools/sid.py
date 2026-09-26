@@ -1,4 +1,7 @@
-"""Strict, dependency-free PSID/RSID header parsing."""
+"""Strict, dependency-free PSID/RSID header parsing.
+
+Copyright (C) 2026 Ulf Bertilsson. SPDX-License-Identifier: GPL-3.0-or-later.
+"""
 
 from __future__ import annotations
 
@@ -19,6 +22,21 @@ def _u32be(data: bytes, offset: int) -> int:
 
 def _text(data: bytes) -> str:
     return data.split(b"\0", 1)[0].decode("latin-1", errors="replace").rstrip()
+
+
+def _extra_sid_address(raw_address: int, label: str) -> int | None:
+    """Decode and validate a PSID v3/v4 extra-SID address byte.
+
+    The header stores an address divided by 16.  Valid extra chips occupy the
+    documented I/O ranges $D420-$D7E0 and $DE00-$DFE0, never the primary
+    $D400 SID window or arbitrary I/O locations.
+    """
+    if raw_address == 0:
+        return None
+    address = 0xD000 + (raw_address << 4)
+    if 0xD420 <= address <= 0xD7E0 or 0xDE00 <= address <= 0xDFE0:
+        return address
+    raise ValueError(f"{label} SID address ${address:04X} is outside the valid PSID ranges")
 
 
 @dataclass(frozen=True)
@@ -88,8 +106,8 @@ def parse_sid(data: bytes) -> tuple[SidHeader, bytes]:
         raise ValueError("SID start-song number is outside the declared song range")
 
     flags = _u16be(data, 0x76) if version >= 2 else None
-    second_sid = 0xD000 + (data[0x7A] << 4) if version >= 3 and data[0x7A] else None
-    third_sid = 0xD000 + (data[0x7B] << 4) if version >= 4 and data[0x7B] else None
+    second_sid = _extra_sid_address(data[0x7A], "second") if version >= 3 else None
+    third_sid = _extra_sid_address(data[0x7B], "third") if version >= 4 else None
     if second_sid == third_sid and second_sid is not None:
         raise ValueError("second and third SID addresses must differ")
 

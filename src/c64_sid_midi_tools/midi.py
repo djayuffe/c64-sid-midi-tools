@@ -1,4 +1,7 @@
-"""Minimal, strict validation of Standard MIDI Files (SMF)."""
+"""Minimal, strict validation of Standard MIDI Files (SMF).
+
+Copyright (C) 2026 Ulf Bertilsson. SPDX-License-Identifier: GPL-3.0-or-later.
+"""
 
 from __future__ import annotations
 
@@ -123,6 +126,10 @@ class MidiNote:
     channel: int = 0
 
     def __post_init__(self) -> None:
+        for name, value in (("start", self.start), ("duration", self.duration), ("pitch", self.pitch),
+                            ("velocity", self.velocity), ("channel", self.channel)):
+            if isinstance(value, bool) or not isinstance(value, int):
+                raise ValueError(f"MIDI note {name} must be an integer")
         if self.start < 0:
             raise ValueError("MIDI note start must not be negative")
         if self.duration <= 0:
@@ -186,7 +193,7 @@ def make_midi(notes: list[MidiNote], *, ticks_per_beat: int = 480, tempo_bpm: fl
     The output contains a tempo meta event and a correctly ordered note-off
     before note-on when notes meet at the same tick.
     """
-    if not 1 <= ticks_per_beat <= 0x7FFF:
+    if isinstance(ticks_per_beat, bool) or not isinstance(ticks_per_beat, int) or not 1 <= ticks_per_beat <= 0x7FFF:
         raise ValueError("ticks per beat must be in the range 1..32767")
     if tempo_bpm <= 0:
         raise ValueError("tempo must be positive")
@@ -195,7 +202,12 @@ def make_midi(notes: list[MidiNote], *, ticks_per_beat: int = 480, tempo_bpm: fl
         raise ValueError("tempo is outside the representable MIDI range")
 
     events: list[tuple[int, int, bytes]] = []
-    for note in notes:
+    active_until: dict[tuple[int, int], int] = {}
+    for note in sorted(notes, key=lambda item: (item.start, item.channel, item.pitch, item.duration)):
+        key = (note.channel, note.pitch)
+        if note.start < active_until.get(key, -1):
+            raise ValueError("overlapping notes with the same channel and pitch are ambiguous in MIDI")
+        active_until[key] = note.start + note.duration
         events.append((note.start, 1, bytes([0x90 | note.channel, note.pitch, note.velocity])))
         events.append((note.start + note.duration, 0, bytes([0x80 | note.channel, note.pitch, 0])))
     events.sort(key=lambda event: (event[0], event[1], event[2]))
