@@ -198,4 +198,5 @@ The project was extracted from an unversioned experimental folder. [SOURCE_AUDIT
 - [CHANGELOG.md](CHANGELOG.md) records user-visible changes.
 - [CONTRIBUTING.md](CONTRIBUTING.md) explains the portability and verification rules.
 - [examples/melody.json](examples/melody.json) is a ready-to-run MIDI authoring input.
-- [LICENSE](LICENSE) and [COPYING](COPYING) contain the GPL-3.0-or-later terms.
+- [NOTICE](NOTICE) records Ulf Bertilsson's copyright; [LICENSE](LICENSE) and
+  [COPYING](COPYING) contain the canonical GPL-3.0-or-later terms.
